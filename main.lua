@@ -1,3 +1,4 @@
 require 'sonnet'
+WalkScene = require 'WalkScene'
 
-sonnet.Scene.push(sonnet.effects.Sparks.demoScene())
+sonnet.Scene.push(WalkScene())
