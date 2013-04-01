@@ -10,6 +10,7 @@ function WalkScene:initialize()
 
     WalkScene.init_quads()
     self.zoom = 1
+    self.player_dir = Point(0, 0)
     self.sb = love.graphics.newSpriteBatch(WalkScene.image, 128*128)
 end
 
@@ -17,6 +18,8 @@ function WalkScene.static.init_quads()
     if WalkScene.image then return end
     local nq = love.graphics.newQuad
     WalkScene.image = love.graphics.newImage('tiles.png')
+    WalkScene.player = love.graphics.newImage('player.png')
+
     WalkScene.quads = {
         grass = nq(0, 0, 32, 32, 128, 128),
         ground = nq(32, 0, 32, 32, 128, 128),
@@ -24,6 +27,20 @@ function WalkScene.static.init_quads()
         field = nq(0, 32, 32, 32, 128, 128),
         crop = nq(32, 32, 32, 32, 128, 128),
     }
+
+    WalkScene.player_quads = {
+        n = {},
+        s = {},
+        e = {},
+        w = {},
+    }
+
+    for y = 0, 2 do
+        WalkScene.player_quads.n[y+1] = nq(0, y*24, 24, 24, 120, 72)
+        WalkScene.player_quads.e[y+1] = nq(24, y*24, 24, 24, 120, 72)
+        WalkScene.player_quads.s[y+1] = nq(48, y*24, 24, 24, 120, 72)
+        WalkScene.player_quads.w[y+1] = nq(72, y*24, 24, 24, 120, 72)
+    end
 end
 
 function WalkScene:draw()
@@ -61,7 +78,12 @@ function WalkScene:draw()
     g.draw(self.sb, 0, 0)
     self.sb:clear()
 
-    g.circle('fill', self.player_loc.x, self.player_loc.y, 20)
+    if self.animation then
+        g.drawq(WalkScene.player, self.animation:quad(),
+                self.player_loc.x-12, self.player_loc.y-12)
+    else
+        g.circle('fill', self.player_loc.x, self.player_loc.y, 12)
+    end
 
     for _, wall in self.walls:each() do
         g.rectangle('fill', wall.x-24, wall.y-24, 48, 48)
@@ -71,16 +93,9 @@ function WalkScene:draw()
     g.pop()
 end
 
-function WalkScene:mousepressed(x, y, btn)
-    if btn == 'wu' and self.zoom < 1 then self.zoom = self.zoom * 2
-    elseif btn == 'wd' and self.zoom > 0.25 then self.zoom = self.zoom / 2 end
-end
-
-function WalkScene:update(dt)
-    print(math.floor(1/dt))
+function WalkScene:calculate_direction()
     local k = love.keyboard.isDown
     local p = Point(0,0)
-    local spd = 200
 
     if k('a') or k('left') then p.x = p.x-1 end
     if k('w') or k(',') or k('up') then p.y = p.y-1 end
@@ -88,10 +103,30 @@ function WalkScene:update(dt)
     if k('d') or k('e') or k('right') then p.x = p.x+1 end
     p = p:normal()
 
-    self.player_loc = self.player_loc + p * spd * dt
+    self.player_dir = p
+
+    self.animation = nil
+    if p.y<0 then self.animation = Animation(0.2, WalkScene.player_quads.n) end
+    if p.y>0 then self.animation = Animation(0.2, WalkScene.player_quads.s) end
+    if p.x>0 then self.animation = Animation(0.2, WalkScene.player_quads.e) end
+    if p.x<0 then self.animation = Animation(0.2, WalkScene.player_quads.w) end
+end
+
+function WalkScene:keypressed(k, u) self:calculate_direction() end
+function WalkScene:keyreleased(k) self:calculate_direction() end
+
+function WalkScene:mousepressed(x, y, btn)
+    if btn == 'wu' and self.zoom < 1 then self.zoom = self.zoom * 2
+    elseif btn == 'wd' and self.zoom > 0.25 then self.zoom = self.zoom / 2 end
+end
+
+function WalkScene:update(dt)
+    local spd = 200
+
+    self.player_loc = self.player_loc + self.player_dir * spd * dt
 
     for _, wall in self.walls:each() do
-        local coll, dir = self:collision(wall, 48, 48, self.player_loc, 20)
+        local coll, dir = self:collision(wall, 48, 48, self.player_loc, 12)
         if coll then
             self.player_loc = self.player_loc + dir * spd * dt
         end
