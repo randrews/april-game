@@ -1,5 +1,5 @@
 require 'sonnet'
 Animation = require 'Animation'
-WalkScene = require 'WalkScene'
+GameScene = require 'GameScene'
 
-sonnet.Scene.push(WalkScene())
+sonnet.Scene.push(GameScene())

@@ -1,0 +1,20 @@
+* Development plan
+** DONE Draw background
+*** DONE Room on right for sidebar
+** DONE Draw paths
+** Draw crop fields
+   Deferred; I think I want crops placed by the player.
+** Generate enemies
+** Cursor selects square under it
+** Sidebar, money / status
+** Clicking raises pie menu
+** Plant crops
+** Water crops, water timer
+** Crop death
+** Enemies walk toward fields
+** Enemies eat crops
+** Crops mature and sell
+** Building towers
+** Towers shoot
+** Towers need ammo
+** Towers upgrade
