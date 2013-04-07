@@ -4,8 +4,8 @@
 ** DONE Draw paths
 ** Draw crop fields
    Deferred; I think I want crops placed by the player.
-** Generate enemies
-** Cursor selects square under it
+** DONE Generate enemies
+** DONE Cursor selects square under it
 ** Sidebar, money / status
 ** Clicking raises pie menu
 ** Plant crops
