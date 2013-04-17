@@ -28,6 +28,8 @@ function GameScene:initialize()
     self.bugs = List()
     self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
 
+    self.money = 100
+
     --- The square the mouse cursor is hovering over
     self.hover_space = nil
 end
@@ -65,9 +67,43 @@ function GameScene:draw()
                                 self.hover_space.y*24, 24, 24)
     end
 
+    --- Sidebar
+    self:draw_sidebar()
+
     --- FPS
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(tostring(self.fps), 10, 10)
+end
+
+function GameScene:draw_sidebar()
+    local g = love.graphics
+
+    local col, caption
+    if self.hover_space then
+        local hovered = self.map:at(self.hover_space)
+        if hovered == 'r' then --- A path
+            col = {204, 170, 90, 255}
+            caption = "Path"
+        elseif hovered == 'g' then --- Normal grass
+            col = {130, 187, 101, 255}
+            caption = "Grass\nClick to till or build"
+        end
+    end
+
+    if col then
+        g.setColor(unpack(col))
+        g.rectangle('fill', 688, 10, 24, 24)
+    end
+
+    if caption then
+        g.setColor(255, 255, 255, 255)
+        g.printf(caption, 600, 44, 200, "center")
+    end
+
+    --- Status
+    g.setColor(255, 255, 255, 255)
+    g.printf( string.format("Money: %s", self.money),
+              610, 84, 200, "left")
 end
 
 function GameScene:update(dt)

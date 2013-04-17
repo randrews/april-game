@@ -1,4 +1,9 @@
 * Development plan
+** For Friday:
+*** DONE Sidebar, money / status
+*** Clicking raises pie menu
+*** Till fields
+    Should cost money, so the player needs to start with some.
 ** DONE Draw background
 *** DONE Room on right for sidebar
 ** DONE Draw paths
@@ -6,8 +11,7 @@
    Deferred; I think I want crops placed by the player.
 ** DONE Generate enemies
 ** DONE Cursor selects square under it
-** Sidebar, money / status
-** Clicking raises pie menu
+
 ** Plant crops
 ** Water crops, water timer
 ** Crop death
