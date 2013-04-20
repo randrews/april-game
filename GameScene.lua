@@ -42,6 +42,9 @@ function GameScene:draw()
         elseif self.map:at(pt) == 't' then
             love.graphics.setColor(102, 52, 13)
             love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
+        elseif self.map:at(pt) == 'i' then
+            love.graphics.setColor(180, 187, 101)
+            love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
         end
     end    
 
@@ -179,6 +182,13 @@ function GameScene:on_command(cmd)
         else
             sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "Not enough money", {255, 0, 0})
         end
+    elseif cmd.type == "Insecticide" then
+        if self.money >= 5 then
+            self.money = self.money - 5
+            self.map:at(cmd.space, 'i')
+        else
+            sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "Not enough money", {255, 0, 0})
+        end        
     end
 end
 
@@ -187,7 +197,8 @@ function GameScene:filter_grass()
         function(pt)
             local x = math.floor(pt.x/24)
             local y = math.floor(pt.y/24)
-            return self.map:at(Point(x, y)) == 'g'
+            local v = self.map:at(Point(x, y))
+            return v == 'g' or v == 'i'
         end)
 end
 
