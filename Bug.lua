@@ -27,6 +27,7 @@ function Bug:draw()
     g.setColor(30, 30, 30)
     g.circle('fill', self.loc.x, self.loc.y, 10)
     g.setColor(255, 0, 0)
+    g.setLineWidth(1)
     g.line(self.loc.x, self.loc.y,
            self.loc.x + math.cos(self.dir) * 20,
            self.loc.y + math.sin(self.dir) * 20)

@@ -1,5 +1,7 @@
 local Point = sonnet.Point
 local List = sonnet.List
+local Messenger = sonnet.Messenger
+
 GameScene = sonnet.middleclass.class('GameScene', sonnet.Scene)
 
 function GameScene:initialize()
@@ -24,14 +26,13 @@ function GameScene:initialize()
         end)
 
     self.grass_glyph = love.graphics.newImage('grass.png')
+    self.pie_menu = PieMenu()
 
     self.bugs = List()
     self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
-
     self.money = 100
-
-    --- The square the mouse cursor is hovering over
-    self.hover_space = nil
+    self.hover_space = nil --- The square the mouse cursor is hovering over
+    Messenger.method_subscribe('command', self, 'on_command')
 end
 
 function GameScene:on_install()
@@ -73,12 +74,18 @@ function GameScene:draw()
     --- FPS
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(tostring(self.fps), 10, 10)
+
+    self.pie_menu:draw()
 end
 
 function GameScene:draw_sidebar()
     local g = love.graphics
 
     local col, caption
+    local pie_hovered = self.pie_menu:hovered_option()
+
+    -- Figure out the color to display and the caption, based
+    -- on what we're hovering over
     if self.hover_space then
         local hovered = self.map:at(self.hover_space)
         if hovered == 'r' then --- A path
@@ -90,6 +97,15 @@ function GameScene:draw_sidebar()
         end
     end
 
+    -- If we're hovering over a pie menu option then we may
+    -- override that caption though.
+    if pie_hovered then
+        if pie_hovered == "Till" then caption = "Till a plot to grow flowers ($10)"
+        elseif pie_hovered == "Build" then caption = "Build a basic guard tower ($25)"
+        elseif pie_hovered == "Insecticide" then caption = "Lay insecticide in this area ($5)"
+        end
+    end
+
     if col then
         g.setColor(unpack(col))
         g.rectangle('fill', 688, 10, 24, 24)
@@ -97,7 +113,7 @@ function GameScene:draw_sidebar()
 
     if caption then
         g.setColor(255, 255, 255, 255)
-        g.printf(caption, 600, 44, 200, "center")
+        g.printf(caption, 620, 44, 160, "center")
     end
 
     --- Status
@@ -112,12 +128,14 @@ function GameScene:update(dt)
     self.bugs:method_map('update', dt)
     self.bugs:method_filter('is_alive')
 
-    self.hover_space = Point(
-        math.floor(love.mouse.getX() / 24),
-        math.floor(love.mouse.getY() / 24))
+    if self.pie_menu.state == 'closed' then
+        self.hover_space = Point(
+            math.floor(love.mouse.getX() / 24),
+            math.floor(love.mouse.getY() / 24))
 
-    if not self.map:inside(self.hover_space) then
-        self.hover_space = nil
+        if not self.map:inside(self.hover_space) then
+            self.hover_space = nil
+        end
     end
 end
 
@@ -125,6 +143,34 @@ function GameScene:keypressed(key)
     if key == 'escape' then
         love.event.quit() -- TODO: toss this later
     end
+end
+
+function GameScene:mousepressed(x, y, btn)
+    if not self.pie_menu:mousepressed(x, y, btn) then
+        -- First, figure out what space we're over, if any
+        local clicked_space = self.hover_space
+
+        if clicked_space then
+            local clicked_value = self.map:at(clicked_space)
+            local pie_center = Point(x,y)
+
+            -- Can't do anything to paths
+            if clicked_value == 'p' then return end
+
+            -- If it's grass, we can build a tower, lay poison, or till
+            if clicked_value == 'g' then
+                local p = self.pie_menu:open(pie_center, {"Build", "Insecticide", "Till"})
+                p:add(function(cmd)
+                          Messenger.send("command",
+                                         {type=cmd, space=clicked_space})
+                      end)
+            end
+        end
+    end
+end
+
+function GameScene:on_command(cmd)
+    print(cmd.type, cmd.space)
 end
 
 function GameScene:spawn_bug()

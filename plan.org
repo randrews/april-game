@@ -1,7 +1,7 @@
 * Development plan
 ** For Friday:
 *** DONE Sidebar, money / status
-*** Clicking raises pie menu
+*** DONE Clicking raises pie menu
 *** Till fields
     Should cost money, so the player needs to start with some.
 ** DONE Draw background
@@ -22,3 +22,4 @@
 ** Towers shoot
 ** Towers need ammo
 ** Towers upgrade
+** Pie menu can go off the screen
