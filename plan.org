@@ -2,7 +2,7 @@
 ** For Friday:
 *** DONE Sidebar, money / status
 *** DONE Clicking raises pie menu
-*** Till fields
+*** DONE Till fields
     Should cost money, so the player needs to start with some.
 ** DONE Draw background
 *** DONE Room on right for sidebar

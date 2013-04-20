@@ -18,13 +18,7 @@ function GameScene:initialize()
         self.map:at(Point(12, n), 'r')
     end
 
-    self.grass_points = self.grass_points:select(
-        function(pt)
-            local x = math.floor(pt.x/24)
-            local y = math.floor(pt.y/24)
-            return self.map:at(Point(x, y)) == 'g'
-        end)
-
+    self:filter_grass()
     self.grass_glyph = love.graphics.newImage('grass.png')
     self.pie_menu = PieMenu()
 
@@ -41,12 +35,15 @@ end
 
 function GameScene:draw()
     --- Draw the special squares
-    love.graphics.setColor(204, 170, 90)
     for pt in self.map:each() do
         if self.map:at(pt) == 'r' then
+            love.graphics.setColor(204, 170, 90)
+            love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
+        elseif self.map:at(pt) == 't' then
+            love.graphics.setColor(102, 52, 13)
             love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
         end
-    end
+    end    
 
     --- Decorative grass
     love.graphics.setColor(109, 165, 88)
@@ -94,6 +91,9 @@ function GameScene:draw_sidebar()
         elseif hovered == 'g' then --- Normal grass
             col = {130, 187, 101, 255}
             caption = "Grass\nClick to till or build"
+        elseif hovered == 't' then --- Tilled plot
+            col = {102, 52, 13, 255}
+            caption = "Tilled plot\nClick to plant"
         end
     end
 
@@ -170,7 +170,25 @@ function GameScene:mousepressed(x, y, btn)
 end
 
 function GameScene:on_command(cmd)
-    print(cmd.type, cmd.space)
+    if cmd.type == "Till" then
+        if self.money >= 10 then
+            self.money = self.money - 10
+            self.map:at(cmd.space, 't')
+            self:filter_grass()
+            sonnet.effects.Sparks(cmd.space.x*24+12, cmd.space.y*24+12, {102, 52, 13}, {102, 52, 13})
+        else
+            sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "Not enough money", {255, 0, 0})
+        end
+    end
+end
+
+function GameScene:filter_grass()
+    self.grass_points = self.grass_points:select(
+        function(pt)
+            local x = math.floor(pt.x/24)
+            local y = math.floor(pt.y/24)
+            return self.map:at(Point(x, y)) == 'g'
+        end)
 end
 
 function GameScene:spawn_bug()
