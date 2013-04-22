@@ -21,12 +21,17 @@ function GameScene:initialize()
     self:filter_grass()
     self.grass_glyph = love.graphics.newImage('grass.png')
     self.pie_menu = PieMenu()
+    self.hover_space = nil --- The square the mouse cursor is hovering over
 
     self.bugs = List()
+    self.flowers = sonnet.SparseMap(25, 25)
+
     self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
     self.money = 100
-    self.hover_space = nil --- The square the mouse cursor is hovering over
+
     Messenger.method_subscribe('command', self, 'on_command')
+    Messenger.method_subscribe('plant_flower', self, 'on_plant')
+
 end
 
 function GameScene:on_install()
@@ -39,7 +44,7 @@ function GameScene:draw()
         if self.map:at(pt) == 'r' then
             love.graphics.setColor(204, 170, 90)
             love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
-        elseif self.map:at(pt) == 't' then
+        elseif self.map:at(pt) == 't' or self.map:at(pt) == 'f' then
             love.graphics.setColor(102, 52, 13)
             love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
         elseif self.map:at(pt) == 'i' then
@@ -52,6 +57,11 @@ function GameScene:draw()
     love.graphics.setColor(109, 165, 88)
     for _, pt in self.grass_points:each() do
         love.graphics.draw(self.grass_glyph, pt.x-5, pt.y-5)
+    end
+
+    --- Flowers
+    for pt in self.flowers:each() do
+        self.flowers:at(pt):draw()
     end
 
     --- Bugs
@@ -83,11 +93,14 @@ function GameScene:draw_sidebar()
 
     local col, caption
     local pie_hovered = self.pie_menu:hovered_option()
+    local flower_hovered = nil
 
     -- Figure out the color to display and the caption, based
     -- on what we're hovering over
     if self.hover_space then
+        flower_hovered = self.flowers:at(self.hover_space)
         local hovered = self.map:at(self.hover_space)
+
         if hovered == 'r' then --- A path
             col = {204, 170, 90, 255}
             caption = "Path"
@@ -97,7 +110,15 @@ function GameScene:draw_sidebar()
         elseif hovered == 't' then --- Tilled plot
             col = {102, 52, 13, 255}
             caption = "Tilled plot\nClick to plant"
+        elseif hovered == 'f' then --- Growing flower
+            col = {102, 52, 13, 255}
         end
+    end
+
+    if flower_hovered then
+        caption = string.format("Flower: health %s%%, growth %s%%",
+                                math.floor(flower_hovered.health),
+                                math.floor(flower_hovered.growth.value))
     end
 
     -- If we're hovering over a pie menu option then we may
@@ -106,12 +127,20 @@ function GameScene:draw_sidebar()
         if pie_hovered == "Till" then caption = "Till a plot to grow flowers ($10)"
         elseif pie_hovered == "Build" then caption = "Build a basic guard tower ($25)"
         elseif pie_hovered == "Insecticide" then caption = "Lay insecticide in this area ($5)"
+
+        elseif pie_hovered == "Plant red" then caption = "Red flower: slowest growth, earns $20"
+        elseif pie_hovered == "Plant blue" then caption = "Blue flower: medium growth, earns $10"
+        elseif pie_hovered == "Plant yellow" then caption = "Yellow flower: fastest growth, earns $5"
         end
     end
 
     if col then
         g.setColor(unpack(col))
         g.rectangle('fill', 688, 10, 24, 24)
+    end
+
+    if flower_hovered then
+        flower_hovered:draw_plant(688, 10)
     end
 
     if caption then
@@ -142,7 +171,7 @@ function GameScene:update(dt)
     end
 end
 
-function GameScene:keypressed(key)
+function GameScene:keypressed(key, code)
     if key == 'escape' then
         love.event.quit() -- TODO: toss this later
     end
@@ -157,19 +186,34 @@ function GameScene:mousepressed(x, y, btn)
             local clicked_value = self.map:at(clicked_space)
             local pie_center = Point(x,y)
 
-            -- Can't do anything to paths
-            if clicked_value == 'p' then return end
+            if clicked_value == 'p' then return -- Can't do anything to paths
 
-            -- If it's grass, we can build a tower, lay poison, or till
-            if clicked_value == 'g' then
+            elseif clicked_value == 'g' then -- If it's grass, we can build a tower, lay poison, or till
                 local p = self.pie_menu:open(pie_center, {"Build", "Insecticide", "Till"})
                 p:add(function(cmd)
+                          if not cmd then return end
                           Messenger.send("command",
                                          {type=cmd, space=clicked_space})
                       end)
+
+            elseif clicked_value == 't' then -- Can plant flowers on plots
+                local p = self.pie_menu:open(pie_center, {"Plant red", "Plant blue", "Plant yellow"})
+                p:add(function(cmd)
+                          if not cmd then return end
+                          local color = cmd:match(" (%w+)")
+                          Messenger.send("plant_flower",
+                                         {color=color, space=clicked_space})
+                      end)
             end
+
         end
     end
+end
+
+function GameScene:on_plant(cmd)
+    local f = Flower[cmd.color](self, cmd.space)
+    self.flowers:at(cmd.space, f)
+    self.map:at(cmd.space, 'f')
 end
 
 function GameScene:on_command(cmd)
@@ -223,5 +267,5 @@ function GameScene:spawn_bug()
     local angle = math.atan2(dir.y, dir.x)
     angle = angle + math.random()*math.pi/4 - math.pi/8
 
-    self.bugs:push(Bug(start*24+Point(12, 12), angle))
+    self.bugs:push(Bug(self.map, start*24+Point(12, 12), angle))
 end

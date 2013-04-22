@@ -3,8 +3,6 @@
 *** DONE Draw background
 **** DONE Room on right for sidebar
 *** DONE Draw paths
-*** Draw crop fields
-    Deferred; I think I want crops placed by the player.
 *** DONE Generate enemies
 *** DONE Cursor selects square under it
 ** For Friday:
@@ -13,8 +11,9 @@
 *** DONE Till fields
     Should cost money, so the player needs to start with some.
 ** For Monday
-*** Plant crops
-*** Crops mature and sell
+*** DONE Poison affects bugs
+*** DONE Plant crops
+*** DONE Crops mature and sell
 *** Building towers
 *** Towers shoot
 ** Later
