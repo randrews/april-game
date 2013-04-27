@@ -32,6 +32,10 @@ end
 
 function Flower:is_alive() return self.health > 0 and not self.mature end
 
+function Flower:kill()
+    self.growth:stop()
+end
+
 function Flower:draw_plant(x, y)
     local g = love.graphics
     g.push()
@@ -74,6 +78,4 @@ function Flower:on_mature()
     local x, y = self.loc()
     sonnet.effects.RisingText(x*24.5, y*23, "+$" .. self.value, {255, 255, 255})
     sonnet.effects.Sparks(x*24.5, y*24.5, self.color, self.color)
-    self.map:at(self.loc, 't')
-    self.game.flowers:delete(self.loc)
 end

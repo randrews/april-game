@@ -32,6 +32,10 @@ function GameScene:initialize()
     Messenger.method_subscribe('command', self, 'on_command')
     Messenger.method_subscribe('plant_flower', self, 'on_plant')
 
+    self:on_plant{color='red', space=Point(10, 10)}
+    self:on_plant{color='red', space=Point(10, 14)}
+    self:on_plant{color='red', space=Point(14, 10)}
+    self:on_plant{color='red', space=Point(14, 14)}
 end
 
 function GameScene:on_install()
@@ -160,6 +164,15 @@ function GameScene:update(dt)
     self.bugs:method_map('update', dt)
     self.bugs:method_filter('is_alive')
 
+    for pt in self.flowers:each() do
+        local f = self.flowers:at(pt)
+        if not f:is_alive() then
+            self.map:at(pt, 't')
+            f:kill()
+            self.flowers:delete(pt)
+        end
+    end
+
     if self.pie_menu.state == 'closed' then
         self.hover_space = Point(
             math.floor(love.mouse.getX() / 24),
@@ -267,5 +280,5 @@ function GameScene:spawn_bug()
     local angle = math.atan2(dir.y, dir.x)
     angle = angle + math.random()*math.pi/4 - math.pi/8
 
-    self.bugs:push(Bug(self.map, start*24+Point(12, 12), angle))
+    self.bugs:push(Bug(self, start*24+Point(12, 12), angle))
 end
