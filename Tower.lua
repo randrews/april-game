@@ -10,7 +10,7 @@ function Tower:initialize(game, loc)
     self.loc = loc
 
     self.angle = math.random(360) / 180 * math.pi
-    self.shot_clock = Clock(0.5, self.shoot, self)
+    self.shot_clock = Clock(2, self.shoot, self)
     self.target = false
     self.range = 100
 end

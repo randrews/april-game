@@ -74,8 +74,9 @@ function Flower:draw()
 end
 
 function Flower:on_mature()
+    self.mature = true
     self.game.money = self.game.money + self.value
     local x, y = self.loc()
-    sonnet.effects.RisingText(x*24.5, y*23, "+$" .. self.value, {255, 255, 255})
-    sonnet.effects.Sparks(x*24.5, y*24.5, self.color, self.color)
+    sonnet.effects.RisingText(x*24+12, y*23, "+$" .. self.value, {255, 255, 255})
+    sonnet.effects.Sparks(x*24+12, y*24+12, self.color, self.color)
 end

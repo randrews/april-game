@@ -32,10 +32,10 @@ function GameScene:initialize()
     Messenger.method_subscribe('command', self, 'on_command')
     Messenger.method_subscribe('plant_flower', self, 'on_plant')
 
-    self:on_plant{color='red', space=Point(10, 10)}
-    self:on_plant{color='red', space=Point(10, 14)}
-    self:on_plant{color='red', space=Point(14, 10)}
-    self:on_plant{color='red', space=Point(14, 14)}
+    self:on_plant{color='yellow', space=Point(10, 10)}
+    self:on_plant{color='blue', space=Point(10, 14)}
+    self:on_plant{color='blue', space=Point(14, 10)}
+    self:on_plant{color='yellow', space=Point(14, 14)}
 
     self:filter_grass()
 end
