@@ -10,7 +10,7 @@ function Tower:initialize(game, loc)
     self.loc = loc
 
     self.angle = math.random(360) / 180 * math.pi
-    self.shot_clock = Clock(2, self.shoot, self)
+    self.shot_clock = Clock(0.5, self.shoot, self)
     self.target = false
     self.range = 100
 end
@@ -25,7 +25,7 @@ function Tower:update(dt)
     end
 
     if self.target then
-        local center = self.loc * 24.5
+        local center = self.loc * 24 + Point(12, 12)
         self.angle = math.atan2(self.target.loc.y-center.y,
                                 self.target.loc.x-center.x)
     end
@@ -39,7 +39,7 @@ end
 function Tower:valid_target()
     if not self.target then return false end
     if not self.target:is_alive() then return false end
-    local center = self.loc*24.5
+    local center = self.loc*24 + Point(12, 12)
     if not center:dist(self.target.loc, self.range) then
         return false end
     return true
@@ -51,7 +51,7 @@ end
 
 function Tower:choose_target()
     local closest, closest_dist = nil
-    local center = self.loc * 24.5
+    local center = self.loc * 24 + Point(12, 12)
     for _, bug in self.game.bugs:each() do
         local dist = center:dist(bug.loc)
         if not closest and dist <= self.range or
@@ -81,5 +81,16 @@ function Tower:draw()
 end
 
 function Tower:shoot()
-    print("Shoot", self)
+    if not self.target then return end
+
+    local barrel = Point(math.cos(self.angle),
+                         math.sin(self.angle))*10
+
+    local x, y = (self.loc*24+Point(12, 12)+barrel)()
+
+    sonnet.effects.Bullet(Point(x,y),
+                          self.target.loc,
+                          250)
+
+    sonnet.effects.Spray(x, y, self.angle)
 end

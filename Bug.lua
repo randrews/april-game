@@ -62,6 +62,13 @@ function Bug:update(dt)
         elseif self.map:at(sp) == 'f' then
             self:set_target(sp)
             self:eat()
+        elseif self.map:at(sp) == 'T' then
+            --- Hit a tower; turn
+            local coll, normal = sonnet.Math.collision_circle_rect(
+                self.loc, 10,
+                sp*24, Point(24, 24))
+
+            if coll then self.dir = math.atan2(normal.y, normal.x) end
         end
     end
 

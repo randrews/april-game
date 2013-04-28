@@ -18,9 +18,10 @@
 *** DONE Enemies walk toward fields
 *** DONE Enemies eat crops
 ** Game complete
-*** Building towers
+*** DONE Building towers
 *** Towers shoot
 *** Towers upgrade
+*** DONE Bugs turn when they hit towers
 *** Title screen
 *** Game over
 *** Bug rate increases
