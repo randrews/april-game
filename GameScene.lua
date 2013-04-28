@@ -18,13 +18,13 @@ function GameScene:initialize()
         self.map:at(Point(12, n), 'r')
     end
 
-    self:filter_grass()
     self.grass_glyph = love.graphics.newImage('grass.png')
     self.pie_menu = PieMenu()
     self.hover_space = nil --- The square the mouse cursor is hovering over
 
     self.bugs = List()
     self.flowers = sonnet.SparseMap(25, 25)
+    self.towers = sonnet.SparseMap(25, 25)
 
     self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
     self.money = 100
@@ -36,6 +36,8 @@ function GameScene:initialize()
     self:on_plant{color='red', space=Point(10, 14)}
     self:on_plant{color='red', space=Point(14, 10)}
     self:on_plant{color='red', space=Point(14, 14)}
+
+    self:filter_grass()
 end
 
 function GameScene:on_install()
@@ -54,6 +56,9 @@ function GameScene:draw()
         elseif self.map:at(pt) == 'i' then
             love.graphics.setColor(180, 187, 101)
             love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
+        elseif self.map:at(pt) == 'T' then
+            love.graphics.setColor(140, 140, 160)
+            love.graphics.rectangle('fill', pt.x*24, pt.y*24, 24, 24)
         end
     end    
 
@@ -70,6 +75,11 @@ function GameScene:draw()
 
     --- Bugs
     self.bugs:method_map('draw')
+
+    --- Towers
+    for pt in self.towers:each() do
+        self.towers:at(pt):draw()
+    end
 
     --- Sidebar
     love.graphics.setColor(166, 166, 166)
@@ -103,6 +113,7 @@ function GameScene:draw_sidebar()
     -- on what we're hovering over
     if self.hover_space then
         flower_hovered = self.flowers:at(self.hover_space)
+        tower_hovered = self.towers:at(self.hover_space)
         local hovered = self.map:at(self.hover_space)
 
         if hovered == 'r' then --- A path
@@ -116,6 +127,8 @@ function GameScene:draw_sidebar()
             caption = "Tilled plot\nClick to plant"
         elseif hovered == 'f' then --- Growing flower
             col = {102, 52, 13, 255}
+        elseif hovered == 'T' then --- Tower
+            col = {140, 140, 160, 255}
         end
     end
 
@@ -123,6 +136,10 @@ function GameScene:draw_sidebar()
         caption = string.format("Flower: health %s%%, growth %s%%",
                                 math.floor(flower_hovered.health),
                                 math.floor(flower_hovered.growth.value))
+    end
+
+    if tower_hovered then
+        caption = string.format("Tower level 1")
     end
 
     -- If we're hovering over a pie menu option then we may
@@ -171,6 +188,11 @@ function GameScene:update(dt)
             f:kill()
             self.flowers:delete(pt)
         end
+    end
+
+    for pt in self.towers:each() do
+        local t = self.towers:at(pt)
+        t:update(dt)
     end
 
     if self.pie_menu.state == 'closed' then
@@ -246,6 +268,16 @@ function GameScene:on_command(cmd)
         else
             sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "Not enough money", {255, 0, 0})
         end        
+    elseif cmd.type == "Build" then
+        if self.money >= 25 then
+            self.money = self.money - 25
+            local t = Tower(self, cmd.space)
+            self.towers:at(cmd.space, t)
+            self.map:at(cmd.space, 'T')
+            self:filter_grass()
+        else
+            sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "Not enough money", {255, 0, 0})
+        end
     end
 end
 

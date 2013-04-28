@@ -14,12 +14,16 @@
 *** DONE Poison affects bugs
 *** DONE Plant crops
 *** DONE Crops mature and sell
+** Later
+*** DONE Enemies walk toward fields
+*** DONE Enemies eat crops
+** Game complete
 *** Building towers
 *** Towers shoot
-** Later
-*** Enemies walk toward fields
-*** Enemies eat crops
 *** Towers upgrade
+*** Title screen
+*** Game over
+*** Bug rate increases
 ** Deferred, game design:
 *** Towers need ammo
 *** Water crops, water timer
