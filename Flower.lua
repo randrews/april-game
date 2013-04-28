@@ -62,13 +62,13 @@ function Flower:draw()
 
     self:draw_plant(0, 0)
 
-    g.setLineWidth(2)
+    g.setLineWidth(3)
     g.setColor(0, 0, 255, 255)
-    g.line(0, 23, self.growth.value*24/100, 23)
+    g.line(0, 22, self.growth.value*24/100, 22)
 
-    g.setLineWidth(2)
-    g.setColor(0, 255, 0, 255)
-    g.line(0, 21, self.health*24/100, 21)
+    g.setLineWidth(3)
+    g.setColor(255, 0, 0, 255)
+    g.line(0, 19, self.health*24/100, 19)
 
     g.pop()
 end

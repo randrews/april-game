@@ -14,9 +14,10 @@ function Bug:initialize(game, loc, dir)
     self.poisoned = false
     self.target = nil
     self.eating = false
+    self.health = 100
 end
 
-function Bug:is_alive() return self.alive end
+function Bug:is_alive() return self.alive and self.health > 0 end
 
 function Bug:update(dt)
     --- Space we were in pre-update
@@ -107,6 +108,13 @@ function Bug:draw()
     g.line(self.loc.x, self.loc.y,
            self.loc.x + math.cos(self.dir) * 20,
            self.loc.y + math.sin(self.dir) * 20)
+
+    g.push()
+    g.translate(self.loc.x-12, self.loc.y-12)
+    g.setLineWidth(2)
+    g.setColor(255, 0, 0, 255)
+    g.line(0, 22, self.health*24/100, 22)
+    g.pop()
 end
 
 function Bug:navigate()

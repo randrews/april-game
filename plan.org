@@ -19,9 +19,13 @@
 *** DONE Enemies eat crops
 ** Game complete
 *** DONE Building towers
-*** Towers shoot
-*** Towers upgrade
 *** DONE Bugs turn when they hit towers
+*** DONE Towers shoot
+*** DONE Tower shots injure bugs
+*** DONE Bug health bars
+*** DONE Bugs die
+*** Puff effect when bugs die
+*** Towers upgrade
 *** Title screen
 *** Game over
 *** Bug rate increases
@@ -31,3 +35,4 @@
 *** Crop death
 ** Bugs
 *** Pie menu can go off the screen
+*** Tower drawing glitches

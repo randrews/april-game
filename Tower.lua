@@ -12,7 +12,9 @@ function Tower:initialize(game, loc)
     self.angle = math.random(360) / 180 * math.pi
     self.shot_clock = Clock(2, self.shoot, self)
     self.target = false
+
     self.range = 100
+    self.damage = 20
 end
 
 function Tower:update(dt)
@@ -88,9 +90,13 @@ function Tower:shoot()
 
     local x, y = (self.loc*24+Point(12, 12)+barrel)()
 
-    sonnet.effects.Bullet(Point(x,y),
-                          self.target.loc,
-                          250)
-
+    local b = sonnet.effects.Bullet(Point(x,y),self.target.loc,250)
     sonnet.effects.Spray(x, y, self.angle)
+
+    b:promise():add(function()
+                        if self.target then
+                            self.target.health =
+                                self.target.health - self.damage
+                        end
+                    end)
 end
