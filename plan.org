@@ -24,10 +24,10 @@
 *** DONE Tower shots injure bugs
 *** DONE Bug health bars
 *** DONE Bugs die
-*** Puff effect when bugs die
+*** DONE Puff effect when bugs die
 *** Towers upgrade
 *** Title screen
-*** Game over
+*** Game goal
 *** Bug rate increases
 ** Deferred, game design:
 *** Towers need ammo

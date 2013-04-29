@@ -41,6 +41,7 @@ end
 function Tower:valid_target()
     if not self.target then return false end
     if not self.target:is_alive() then return false end
+    if self.target.health <= 0 then return false end
     local center = self.loc*24 + Point(12, 12)
     if not center:dist(self.target.loc, self.range) then
         return false end
@@ -56,8 +57,8 @@ function Tower:choose_target()
     local center = self.loc * 24 + Point(12, 12)
     for _, bug in self.game.bugs:each() do
         local dist = center:dist(bug.loc)
-        if not closest and dist <= self.range or
-            closest and dist < closest_dist then
+        if (not closest and dist <= self.range or
+            closest and dist < closest_dist) and bug.health > 0 then
             closest = bug
             closest_dist = dist
         end

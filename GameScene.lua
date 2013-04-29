@@ -26,11 +26,7 @@ function GameScene:initialize()
     self.flowers = sonnet.SparseMap(25, 25)
     self.towers = sonnet.SparseMap(25, 25)
 
-    self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
     self.money = 100
-
-    Messenger.method_subscribe('command', self, 'on_command')
-    Messenger.method_subscribe('plant_flower', self, 'on_plant')
 
     self:on_plant{color='yellow', space=Point(10, 10)}
     self:on_plant{color='blue', space=Point(10, 14)}
@@ -42,6 +38,9 @@ end
 
 function GameScene:on_install()
     love.graphics.setBackgroundColor(130, 187, 101)
+    self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
+    Messenger.method_subscribe('command', self, 'on_command')
+    Messenger.method_subscribe('plant_flower', self, 'on_plant')
 end
 
 function GameScene:draw()
@@ -203,12 +202,6 @@ function GameScene:update(dt)
         if not self.map:inside(self.hover_space) then
             self.hover_space = nil
         end
-    end
-end
-
-function GameScene:keypressed(key, code)
-    if key == 'escape' then
-        love.event.quit() -- TODO: toss this later
     end
 end
 

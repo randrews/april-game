@@ -10,16 +10,29 @@ function Bug:initialize(game, loc, dir)
     self.alive = true
     self.spaces = List{}
     self.speed = 24
-
+    self.bounds = Point(648, 648)
     self.poisoned = false
     self.target = nil
     self.eating = false
     self.health = 100
+
+    self.fadeout = nil
 end
 
-function Bug:is_alive() return self.alive and self.health > 0 end
+function Bug:is_alive() return self.alive end
 
 function Bug:update(dt)
+    --- We're fading out; don't do anything
+    if self.fadeout then return end
+
+    --- We're newly-dead this tick, create a fadeout and
+    --- return
+    if self.health <= 0 then
+        self.fadeout = sonnet.Tween(255, 0, 0.5)
+        self.fadeout:promise():add(function() self.alive = false end)
+        return
+    end
+
     --- Space we were in pre-update
     --- (to check if we crossed a boundary)
     local start_space = Point(math.floor(self.loc.x/24), math.floor(self.loc.y/24))
@@ -31,15 +44,19 @@ function Bug:update(dt)
         self.loc.y = self.loc.y + math.sin(self.dir) * dist
     end
 
-    --- Space we're in after update
-    local space = Point(math.floor(self.loc.x/24), math.floor(self.loc.y/24))
-
     --- If we walked off-screen, kill us
     if not sonnet.Math.collision_point_rect(self.loc,
                                             Point(-24, -24),
-                                            Point(648, 648)) then
+                                            self.bounds) then
         self.alive = false
     end
+
+    --- We're in the title scene, we just walk and that's
+    --- it.
+    if self.game.class == TitleScene then return end
+
+    --- Space we're in after update
+    local space = Point(math.floor(self.loc.x/24), math.floor(self.loc.y/24))
 
     --- If we changed spaces, rerun AI
     if space ~= start_space then
@@ -88,22 +105,17 @@ end
 function Bug:draw()
     local g = love.graphics
 
-    --- Highlight spaces we're over
-    -- g.setColor(255, 255, 255, 255)
-    -- if self.spaces then
-    --     for _, pt in self.spaces:each() do
-    --         g.rectangle('line', pt.x*24, pt.y*24, 24, 24)
-    --     end
-    -- end
+    local opacity = 255
+    if self.fadeout then opacity = self.fadeout.value end
 
     if self.poisoned then
-        g.setColor(70, 100, 70)
+        g.setColor(70, 100, 70, opacity)
     else
-        g.setColor(30, 30, 30)
+        g.setColor(30, 30, 30, opacity)
     end
 
     g.circle('fill', self.loc.x, self.loc.y, 10)
-    g.setColor(255, 0, 0)
+    g.setColor(255, 0, 0, opacity)
     g.setLineWidth(1)
     g.line(self.loc.x, self.loc.y,
            self.loc.x + math.cos(self.dir) * 20,
@@ -112,7 +124,7 @@ function Bug:draw()
     g.push()
     g.translate(self.loc.x-12, self.loc.y-12)
     g.setLineWidth(2)
-    g.setColor(255, 0, 0, 255)
+    g.setColor(255, 0, 0, opacity)
     g.line(0, 22, self.health*24/100, 22)
     g.pop()
 end
