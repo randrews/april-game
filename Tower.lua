@@ -13,8 +13,33 @@ function Tower:initialize(game, loc)
     self.shot_clock = Clock(2, self.shoot, self)
     self.target = false
 
-    self.range = 100
+    self.range = 96
     self.damage = 20
+    self.level = 1
+end
+
+function Tower:can_upgrade()
+    return self.level < 5
+end
+
+function Tower:upgrade_cost()
+    return self.level * 10
+end
+
+function Tower:upgrade(type)
+    self.level = self.level + 1
+    if type == 'range' then
+        self.range = self.range + 24
+    elseif type == 'damage' then
+        self.damage = self.damage + 20
+    elseif type == 'fire' then
+        self.shot_clock.delay = self.shot_clock.delay - 0.25
+    end
+end
+
+function Tower:caption()
+    return string.format("Tower level %d\nRange %d / Dmg %d / Spd %s",
+                         self.level, self.range / 24, self.damage, self.shot_clock.delay)
 end
 
 function Tower:update(dt)
@@ -71,6 +96,9 @@ function Tower:draw()
     local g = love.graphics
     g.push()
     g.translate(self.loc.x*24, self.loc.y*24)
+
+    g.setColor(140, 140, 160, 255)
+    g.rectangle('fill', 0, 0, 24, 24)
 
     g.setLineWidth(2)
     g.setColor(255, 255, 255, 255)

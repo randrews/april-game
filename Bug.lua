@@ -2,6 +2,8 @@ local Point = sonnet.Point
 local List = sonnet.List
 Bug = sonnet.middleclass.class('Bug')
 
+Bug.image = love.graphics.newImage('ladybug.png')
+
 function Bug:initialize(game, loc, dir)
     self.game = game
     self.map = game.map
@@ -109,17 +111,19 @@ function Bug:draw()
     if self.fadeout then opacity = self.fadeout.value end
 
     if self.poisoned then
-        g.setColor(70, 100, 70, opacity)
+        g.setColor(120, 120, 120, opacity)
     else
-        g.setColor(30, 30, 30, opacity)
+        g.setColor(220, 220, 220, opacity)
     end
 
-    g.circle('fill', self.loc.x, self.loc.y, 10)
-    g.setColor(255, 0, 0, opacity)
-    g.setLineWidth(1)
-    g.line(self.loc.x, self.loc.y,
-           self.loc.x + math.cos(self.dir) * 20,
-           self.loc.y + math.sin(self.dir) * 20)
+    g.draw(Bug.image,
+           self.loc.x, self.loc.y,
+           self.dir + math.pi/2,
+           1, 1,
+           12, 12)
+
+    --- We're in the title scene, no health bar
+    if self.game.class == TitleScene then return end
 
     g.push()
     g.translate(self.loc.x-12, self.loc.y-12)

@@ -26,7 +26,7 @@ function GameScene:initialize()
     self.flowers = sonnet.SparseMap(25, 25)
     self.towers = sonnet.SparseMap(25, 25)
 
-    self.money = 100
+    self.money = 10000
 
     self:on_plant{color='yellow', space=Point(10, 10)}
     self:on_plant{color='blue', space=Point(10, 14)}
@@ -41,6 +41,7 @@ function GameScene:on_install()
     self.bug_clock = sonnet.Clock(3, self.spawn_bug, self)
     Messenger.method_subscribe('command', self, 'on_command')
     Messenger.method_subscribe('plant_flower', self, 'on_plant')
+    Messenger.method_subscribe('upgrade_tower', self, 'on_upgrade_tower')
 end
 
 function GameScene:draw()
@@ -121,6 +122,9 @@ function GameScene:draw_sidebar()
         elseif hovered == 'g' then --- Normal grass
             col = {130, 187, 101, 255}
             caption = "Grass\nClick to till or build"
+        elseif hovered == 'i' then --- Normal grass
+            col = {180, 187, 101, 255}
+            caption = "Insecticide\nSlows down bugs"
         elseif hovered == 't' then --- Tilled plot
             col = {102, 52, 13, 255}
             caption = "Tilled plot\nClick to plant"
@@ -138,7 +142,7 @@ function GameScene:draw_sidebar()
     end
 
     if tower_hovered then
-        caption = string.format("Tower level 1")
+        caption = tower_hovered:caption()
     end
 
     -- If we're hovering over a pie menu option then we may
@@ -213,6 +217,9 @@ function GameScene:mousepressed(x, y, btn)
         if clicked_space then
             local clicked_value = self.map:at(clicked_space)
             local pie_center = Point(x,y)
+            if pie_center.x < 150 then pie_center.x = 150 end
+            if pie_center.y < 150 then pie_center.y = 150 end
+            if pie_center.y > 450 then pie_center.y = 450 end
 
             if clicked_value == 'p' then return -- Can't do anything to paths
 
@@ -232,9 +239,38 @@ function GameScene:mousepressed(x, y, btn)
                           Messenger.send("plant_flower",
                                          {color=color, space=clicked_space})
                       end)
+
+            elseif clicked_value == 'T' then -- Can upgrade towers
+                local tower = self.towers:at(clicked_space)
+                if tower:can_upgrade() then
+                    local cost = " $" .. tower:upgrade_cost()
+                    local p = self.pie_menu:open(pie_center, {"Upgrade range" .. cost,
+                                                              "Upgrade damage" .. cost,
+                                                              "Upgrade fire rate" .. cost})
+                    p:add(function(cmd)
+                              if not cmd then return end
+                              local type = cmd:match(" (%w+)")
+                              Messenger.send("upgrade_tower",
+                                             {type=type, tower=tower})
+                          end)
+                end
             end
 
         end
+    end
+end
+
+function GameScene:on_upgrade_tower(cmd)
+    local t = cmd.tower
+    assert(t:can_upgrade())
+    local cost = t:upgrade_cost()
+
+    if self.money >= cost then
+        self.money = self.money - cost
+        t:upgrade(cmd.type)
+        sonnet.effects.RisingText(t.loc.x*24+12, t.loc.y*24-24, "Upgraded", {255, 255, 255})
+    else
+        sonnet.effects.RisingText(t.loc.x*24+12, t.loc.y*24-24, "Not enough money", {255, 0, 0})
     end
 end
 
