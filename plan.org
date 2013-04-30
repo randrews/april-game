@@ -28,13 +28,13 @@
 *** DONE Bug sprite
 *** DONE Towers upgrade
 *** DONE Title screen
-*** Game goal
+*** DONE Game goal
 **** Seeds
      you start with 5, every successful flower
      gives you two seeds. You get points for selling flowers
      (equal to money earned) but you lose if you have no
      living flowers and no seeds.
-*** Bug rate increases
+*** DONE Bug rate increases
 ** Deferred, game design:
 *** Towers need ammo
 *** Water crops, water timer

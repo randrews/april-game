@@ -18,6 +18,7 @@ function GameScene:initialize()
         self.map:at(Point(12, n), 'r')
     end
 
+    self.big_font = love.graphics.newFont(72)
     self.grass_glyph = love.graphics.newImage('grass.png')
     self.pie_menu = PieMenu()
     self.hover_space = nil --- The square the mouse cursor is hovering over
@@ -26,7 +27,9 @@ function GameScene:initialize()
     self.flowers = sonnet.SparseMap(25, 25)
     self.towers = sonnet.SparseMap(25, 25)
 
-    self.money = 10000
+    self.money = 100
+    self.score = 0
+    self.seeds = 9 -- We'll spend 4 on the initial 4 flowers
 
     self:on_plant{color='yellow', space=Point(10, 10)}
     self:on_plant{color='blue', space=Point(10, 14)}
@@ -34,6 +37,8 @@ function GameScene:initialize()
     self:on_plant{color='yellow', space=Point(14, 14)}
 
     self:filter_grass()
+
+    self.gameover = false
 end
 
 function GameScene:on_install()
@@ -86,7 +91,7 @@ function GameScene:draw()
     love.graphics.rectangle('fill', 600, 0, 200, 600)
 
     --- Hover space
-    if self.hover_space then
+    if self.hover_space and not self.gameover then
         love.graphics.setColor(255, 0, 0, 100)
         love.graphics.rectangle('fill', self.hover_space.x*24,
                                 self.hover_space.y*24, 24, 24)
@@ -100,6 +105,8 @@ function GameScene:draw()
     love.graphics.print(tostring(self.fps), 10, 10)
 
     self.pie_menu:draw()
+
+    if self.gameover then self:draw_gameover() end
 end
 
 function GameScene:draw_sidebar()
@@ -158,24 +165,48 @@ function GameScene:draw_sidebar()
         end
     end
 
-    if col then
-        g.setColor(unpack(col))
-        g.rectangle('fill', 688, 10, 24, 24)
-    end
+    if not self.gameover then
+        if col then
+            g.setColor(unpack(col))
+            g.rectangle('fill', 688, 10, 24, 24)
+        end
 
-    if flower_hovered then
-        flower_hovered:draw_plant(688, 10)
-    end
+        if flower_hovered then
+            flower_hovered:draw_plant(688, 10)
+        end
 
-    if caption then
-        g.setColor(255, 255, 255, 255)
-        g.printf(caption, 620, 44, 160, "center")
+        if caption then
+            g.setColor(255, 255, 255, 255)
+            g.printf(caption, 620, 44, 160, "center")
+        end
     end
 
     --- Status
     g.setColor(255, 255, 255, 255)
     g.printf( string.format("Money: %s", self.money),
               610, 84, 200, "left")
+
+    g.printf( string.format("Score: %s", self.score),
+              610, 100, 200, "left")
+
+    g.printf( string.format("Seeds: %s", self.seeds),
+              610, 116, 200, "left")
+end
+
+function GameScene:draw_gameover()
+    local g = love.graphics
+    local w, h = g.getMode()
+    g.setColor(0, 0, 0, 180)
+    g.rectangle('fill', 0, 0, w, h)
+
+    g.setColor(100, 220, 100, 255)
+    local f = g.getFont()
+    g.setFont(self.big_font)
+    g.printf("Game Over", 0, 60, w, 'center')
+    g.setFont(f)
+
+    g.setColor(255, 255, 255, 255)
+    g.printf("Score: " .. self.score, 0, 180, w, 'center')
 end
 
 function GameScene:update(dt)
@@ -184,7 +215,10 @@ function GameScene:update(dt)
     self.bugs:method_map('update', dt)
     self.bugs:method_filter('is_alive')
 
+    local any_flowers = false
+
     for pt in self.flowers:each() do
+        any_flowers = true
         local f = self.flowers:at(pt)
         if not f:is_alive() then
             self.map:at(pt, 't')
@@ -207,10 +241,17 @@ function GameScene:update(dt)
             self.hover_space = nil
         end
     end
+
+    if self.seeds == 0 and not any_flowers then
+        self.gameover = true
+        self.pie_menu:close()
+    end
 end
 
 function GameScene:mousepressed(x, y, btn)
-    if not self.pie_menu:mousepressed(x, y, btn) then
+    if self.gameover then
+        return
+    elseif not self.pie_menu:mousepressed(x, y, btn) then
         -- First, figure out what space we're over, if any
         local clicked_space = self.hover_space
 
@@ -275,9 +316,14 @@ function GameScene:on_upgrade_tower(cmd)
 end
 
 function GameScene:on_plant(cmd)
-    local f = Flower[cmd.color](self, cmd.space)
-    self.flowers:at(cmd.space, f)
-    self.map:at(cmd.space, 'f')
+    if self.seeds > 0 then
+        self.seeds = self.seeds - 1
+        local f = Flower[cmd.color](self, cmd.space)
+        self.flowers:at(cmd.space, f)
+        self.map:at(cmd.space, 'f')
+    else
+        sonnet.effects.RisingText(cmd.space.x*24+12, cmd.space.y*24-24, "No seeds left", {255, 0, 0})
+    end
 end
 
 function GameScene:on_command(cmd)

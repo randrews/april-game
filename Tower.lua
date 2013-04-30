@@ -38,7 +38,7 @@ function Tower:upgrade(type)
 end
 
 function Tower:caption()
-    return string.format("Tower level %d\nRange %d / Dmg %d / Spd %s",
+    return string.format("Tower level %d / 5\nRange %d / Dmg %d / Spd %s",
                          self.level, self.range / 24, self.damage, self.shot_clock.delay)
 end
 

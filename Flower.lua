@@ -76,7 +76,12 @@ end
 function Flower:on_mature()
     self.mature = true
     self.game.money = self.game.money + self.value
+    self.game.score = self.game.score + self.value
+    self.game.seeds = self.game.seeds + 2
+    if self.game.bug_clock.delay > 0.25 then
+        self.game.bug_clock.delay = self.game.bug_clock.delay - 0.25
+    end
     local x, y = self.loc()
-    sonnet.effects.RisingText(x*24+12, y*23, "+$" .. self.value, {255, 255, 255})
+    sonnet.effects.RisingText(x*24+12, y*23, "+$" .. self.value .. ", +2 seeds", {255, 255, 255})
     sonnet.effects.Sparks(x*24+12, y*24+12, self.color, self.color)
 end
